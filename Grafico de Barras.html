@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>grafico de barras</title>
+</head>
+<body>
+    <h2>Gráfico de Barras</h2>
+    <CENTER><h2>REALIZADO POR : Erick Jeandet Quispe Herrera </h2></CENTER>
+    <canvas id="myCanvas" width="600" height="600" style="border:4px solid black;"></canvas>
+
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Datos: 50, 60, 70, 80, 90, 100 (Representando porcentajes)
+        // Multiplicamos por 5 para que se vean grandes en el canvas de 600
+        var porcentajes = [50, 60, 70, 80, 90, 100];
+        var datos = [250, 300, 350, 400, 450, 500]; 
+        var colores = ["pink", "black", "red", "yellow", "green", "blue"];
+
+        // Configuración de texto
+        ctx.font = "20px Arial";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "black";
+
+        // Dibujar barras
+        var x = 50; 
+        var width = 60; 
+
+        for (var i = 0; i < datos.length; i++) {
+            // 1. DIBUJAR LA BARRA
+            ctx.beginPath();
+            ctx.rect(x, 550 - datos[i], width, datos[i]); 
+            ctx.fillStyle = colores[i];
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+
+            // 2. AÑADIR EL TEXTO ENCIMA (El porcentaje)
+            ctx.fillStyle = "black"; // Color del texto
+            //fillText(texto, x, y)
+            // x + width/2 sirve para centrar el texto en medio de la barra
+            // 540 - datos[i] pone el texto 10 píxeles arriba de la barra
+            ctx.fillText(porcentajes[i] + "%", x + (width / 2), 540 - datos[i]);
+
+            x += width + 25; 
+        }
+    </script>
+</body>
+</html>
