@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gráfica cde funcion </title>
+<style>
+    canvas {
+        border: 1px solid black;
+    }
+</style>
+</head>
+<body>
+
+<h2>Ejercicio 4 Gráfica de y = x²</h2>
+<h2>Realizado Por : Erick Jeandet Quispe Herrera</h2>
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let centroX = 250;
+let centroY = 250;
+let escala = 20;
+
+// 🔹 Dibujar ejes
+function dibujarEjes() {
+    ctx.strokeStyle = "black";
+    ctx.beginPath();
+
+    // Eje X
+    ctx.moveTo(0, centroY);
+    ctx.lineTo(500, centroY);
+
+    // Eje Y
+    ctx.moveTo(centroX, 0);
+    ctx.lineTo(centroX, 500);
+
+    ctx.stroke();
+}
+
+// 🔹 Dibujar números en los ejes
+function dibujarNumeros() {
+    ctx.fillStyle = "black";
+    ctx.font = "10px Arial";
+
+    // Números en eje X
+    for (let x = -10; x <= 10; x++) {
+        let posX = centroX + x * escala;
+        ctx.fillText(x, posX - 5, centroY + 15);
+    }
+
+    // Números en eje Y
+    for (let y = -10; y <= 10; y++) {
+        let posY = centroY - y * escala;
+        ctx.fillText(y, centroX + 5, posY + 3);
+    }
+}
+// funcion dibujar puntos 
+function dibujarPuntos() {
+    ctx.fillStyle = "red";
+
+    let puntos = [-2, -1, 0, 1, 2, 3];
+
+    puntos.forEach(x => {
+        let y = x * x;
+
+        let canvasX = centroX + x * escala;
+        let canvasY = centroY - y * escala;
+
+        ctx.beginPath();
+        ctx.arc(canvasX, canvasY, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// 🔹 Función matemática
+function f(x) {
+    return x * x;
+}
+
+// 🔹 Graficar
+function graficar() {
+    ctx.strokeStyle = "blue";
+    ctx.beginPath();
+
+    for (let x = -10; x <= 10; x += 0.1) {
+        let y = f(x);
+
+        let canvasX = centroX + x * escala;
+        let canvasY = centroY - y * escala;
+
+        if (x === -10) {
+            ctx.moveTo(canvasX, canvasY);
+        } else {
+            ctx.lineTo(canvasX, canvasY);
+        }
+    }
+
+    ctx.stroke();
+}
+
+// Ejecutar todo
+dibujarEjes();
+dibujarNumeros();
+graficar();
+dibujarPuntos();
+</script>
+
+</body>
+</html>
