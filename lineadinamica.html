@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>linea dinamica</title>
+    <title>Línea dinámica</title>
 </head>
 <body>
-    <h2>Línea Dinámica</h2>
-    <canvas id="myCanvas" width="800" height="400" style="border: 1px solid black;"></canvas>
+
+<h2>Realizado por: Erick Jeandet Quispe Herrera</h2>
+<h3>Línea Dinámica</h3>
+
+<canvas id="myCanvas" width="800" height="400" style="border: 1px solid black;"></canvas>
 
 <script>
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-// variables necesarias
 var xstart = 0;
 var xend = 800;
 var step  = 0.1;
@@ -22,10 +23,9 @@ var time = 0;
 // función para dibujar el gráfico
 function drawGraph() {
 
-    // limpiar lienzo
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // PLANO CARTESIANO 
+    // Ejes
     ctx.beginPath();
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
@@ -39,6 +39,29 @@ function drawGraph() {
     ctx.lineTo(canvas.width / 2, canvas.height);
 
     ctx.stroke();
+
+    // NÚMEROS
+    ctx.fillStyle = "black";
+    ctx.font = "10px Arial";
+
+    // eje X
+    for (let i = 0; i <= canvas.width; i += 50) {
+        let valorX = i - canvas.width / 2;
+        if (valorX !== 0) {
+            ctx.fillText(valorX, i, canvas.height / 2 + 15);
+        }
+    }
+
+    // eje Y
+    for (let i = 0; i <= canvas.height; i += 50) {
+        let valorY = canvas.height / 2 - i;
+        if (valorY !== 0) {
+            ctx.fillText(valorY, canvas.width / 2 + 5, i);
+        }
+    }
+
+    //origen
+    ctx.fillText("0", canvas.width / 2 + 5, canvas.height / 2 + 15);
 
     // FUNCIÓN
     ctx.beginPath();
@@ -66,6 +89,7 @@ function animate() {
 }
 
 animate();
-</script>  
+</script>
+
 </body>
 </html>
