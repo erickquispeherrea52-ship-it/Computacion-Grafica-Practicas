@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>linea dinamica</title>
+</head>
+<body>
+    <h2>Línea Dinámica</h2>
+    <canvas id="myCanvas" width="800" height="400" style="border: 1px solid black;"></canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+// variables necesarias
+var xstart = 0;
+var xend = 800;
+var step  = 0.1;
+var time = 0;
+
+// función para dibujar el gráfico
+function drawGraph() {
+
+    // limpiar lienzo
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // PLANO CARTESIANO 
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+
+    // eje X
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+
+    // eje Y
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+
+    ctx.stroke();
+
+    // FUNCIÓN
+    ctx.beginPath();
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+
+    for (var x = xstart; x < xend; x += step) {
+        var y = Math.sin(x * 0.01 + time);
+
+        if (x === xstart) {
+            ctx.moveTo(x, canvas.height / 2 - y * 100);
+        } else {
+            ctx.lineTo(x, canvas.height / 2 - y * 100);
+        }
+    }
+
+    ctx.stroke();
+}
+
+// animación
+function animate() {
+    drawGraph();
+    time += 0.08;
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>  
+</body>
+</html>
