@@ -28,11 +28,10 @@
     ctx.lineTo(250, 500);
     ctx.stroke();
 
-    // Parábola hacia la izquierda (grande)
     ctx.beginPath();
 
     for (let y = -250; y <= 250; y++) {
-        let x = -Math.pow(y, 2) / 200;
+        let x = Math.pow(y, 2) / 200;
 
         let canvasX = 250 + x;
         let canvasY = 250 - y;
