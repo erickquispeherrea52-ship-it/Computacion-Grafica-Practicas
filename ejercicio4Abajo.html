@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gráfica de función</title>
+<style>
+    canvas {
+        border: 1px solid black;
+    }
+</style>
+</head>
+
+<body> 
+<h2>Realizado por: Erick Jeandet Quispe Herrera</h2>
+<h3>Ejercicio 4</h3>
+
+<canvas id="myCanvas" width="500" height="500" style="border: 1px solid black;"></canvas>
+
+<script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Dibujar los ejes
+    ctx.beginPath();
+    ctx.moveTo(0, 250);   // Eje X
+    ctx.lineTo(500, 250);
+    ctx.moveTo(250, 0);   // Eje Y
+    ctx.lineTo(250, 500);
+    ctx.stroke();
+
+    // Función invertida: y = -x^2
+    ctx.beginPath();
+    ctx.moveTo(0, 250);    
+
+    for (var x = -250; x < 250; x++) {
+        var y = -Math.pow(x, 2) / 100;  
+        ctx.lineTo(250 + x, 250 - y);
+    }
+
+    ctx.strokeStyle = 'blue';
+    ctx.stroke();
+</script>
+
+</body>
+</html>

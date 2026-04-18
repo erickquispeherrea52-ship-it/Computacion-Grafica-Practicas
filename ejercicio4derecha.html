@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gráfica de función</title>
+<style>
+    canvas {
+        border: 1px solid black;
+    }
+</style>
+</head>
+
+<body> 
+<h2>Realizado por: Erick Jeandet Quispe Herrera</h2>
+<h3>Ejercicio 4</h3>
+
+<canvas id="myCanvas" width="500" height="500"></canvas>
+
+<script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Dibujar los ejes
+    ctx.beginPath();
+    ctx.moveTo(0, 250);
+    ctx.lineTo(500, 250);
+    ctx.moveTo(250, 0);
+    ctx.lineTo(250, 500);
+    ctx.stroke();
+
+    // Parábola hacia la derecha (sin líneas raras)
+    ctx.beginPath();
+
+    for (let y = -100; y <= 100; y++) {
+        let x = Math.pow(y, 2) / 50;
+
+        let canvasX = 250 + x;
+        let canvasY = 250 - y;
+
+        if (y === -100) {
+            ctx.moveTo(canvasX, canvasY);
+        } else {
+            ctx.lineTo(canvasX, canvasY);
+        }
+    }
+
+    ctx.strokeStyle = "blue";
+    ctx.stroke();
+</script>
+
+</body>
+</html>
