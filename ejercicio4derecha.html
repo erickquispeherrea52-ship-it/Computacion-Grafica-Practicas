@@ -12,7 +12,7 @@
 
 <body> 
 <h2>Realizado por: Erick Jeandet Quispe Herrera</h2>
-<h3>Ejercicio 4</h3>
+<h3>Ejercicio 4 - Función hacia la izquierda</h3>
 
 <canvas id="myCanvas" width="500" height="500"></canvas>
 
@@ -22,21 +22,22 @@
 
     // Dibujar los ejes
     ctx.beginPath();
-    ctx.moveTo(0, 250);
+    ctx.moveTo(0, 250);   // Eje X
     ctx.lineTo(500, 250);
-    ctx.moveTo(250, 0);
+    ctx.moveTo(250, 0);   // Eje Y
     ctx.lineTo(250, 500);
     ctx.stroke();
 
+    // Parábola hacia la izquierda (grande)
     ctx.beginPath();
 
-    for (let y = -100; y <= 100; y++) {
-        let x = Math.pow(y, 2) / 50;
+    for (let y = -250; y <= 250; y++) {
+        let x = -Math.pow(y, 2) / 200;
 
         let canvasX = 250 + x;
         let canvasY = 250 - y;
 
-        if (y === -100) {
+        if (y === -250) {
             ctx.moveTo(canvasX, canvasY);
         } else {
             ctx.lineTo(canvasX, canvasY);
