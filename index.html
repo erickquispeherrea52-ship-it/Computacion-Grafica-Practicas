@@ -8,7 +8,6 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  /* ¡RESTAURADO TU FONDO DEGRADADO ORIGINAL! */
   background: linear-gradient(90deg, #000, #1a0033, #000);
   color: white;
 }
@@ -23,8 +22,8 @@ body {
   padding: 20px;
   backdrop-filter: blur(10px);
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-  
 }
+
 
 /* AVATAR CON EFECTO */
 .avatar {
@@ -71,7 +70,6 @@ body {
   z-index: 0;
 }
 
-/* ANIMACIÓN */
 @keyframes girar {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -95,16 +93,117 @@ body {
   text-align: right;
 }
 
-/* CARPETAS */
+/* TÍTULOS DE SECCIÓN */
+.seccion-titulo {
+  text-align: center;
+  color: #00ffff;
+  text-shadow: 0 0 10px cyan;
+  margin: 40px 0 20px 0;
+  font-size: 28px;
+}
+
+/* -------------------------------------------
+   NUEVO: CONTENEDOR DE CLASES (ORGANIZACIÓN)
+--------------------------------------------- */
+.clases-container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que bajen si se abre en celular */
+  justify-content: center;
+  gap: 30px;
+  max-width: 1000px;
+  margin: 0 auto 50px auto;
+  padding: 0 20px;
+}
+
+/* TARJETA DE CADA CLASE */
+.clase-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  padding: 20px;
+  width: 280px; 
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.clase-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+  border: 1px solid rgba(0, 255, 255, 0.5);
+}
+
+/* CABECERA DE LA TARJETA (Ej. "Clase 1") */
+.clase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 10px;
+}
+
+.clase-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.clase-header .icono-clase {
+  font-size: 24px;
+}
+
+/* ARCHIVOS DENTRO DE LA CLASE */
+.clase-item {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4); /* Fondo oscurito */
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: #ccc;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.clase-item:hover {
+  background: rgba(0, 198, 255, 0.1);
+  border-left: 3px solid #00ffff; /* Borde neón al pasar el mouse */
+  color: #ffffff;
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.clase-item .icono-archivo {
+  margin-right: 10px;
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+/* SECCIÓN EXTRA: Habilidades */
+.habilidades {
+  max-width: 900px;
+  margin: 0 auto 50px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.habilidades h2 {
+  color: #00c6ff;
+  text-shadow: 0 0 5px cyan;
+  margin-bottom: 30px;
+}
+
+/* CARPETAS ORIGINALES (Por si acaso) */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   max-width: 900px;
-  margin: 20px auto 50px;
+  margin: 20px auto 50px auto;
   padding: 20px;
   justify-content: center;
-  
 }
 
 .folder {
@@ -120,7 +219,6 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  
 }
 
 .folder:hover {
@@ -147,49 +245,12 @@ body {
   background: #000;
   border-radius: 15px;
   padding: 20px;
-  backdrop-filter: blur(800px);
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  border: 2px solid #00ffff; /* La línea cian brillante */
+  border: 2px solid #00ffff;
   box-shadow: 0 0 20px #00ffff, inset 0 0 15px rgba(0, 255, 255, 0.5);
-}
-
-/* SECCIÓN EXTRA: Habilidades */
-.habilidades {
-  max-width: 900px;
-  margin: 0 auto 50px auto;
-  padding: 0 20px;
-  text-align: center;
-}
-
-.habilidades h2 {
-  color: #00c6ff;
-  text-shadow: 0 0 5px cyan;
-  margin-bottom: 30px;
-}
-
-.skill-bar {
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  margin-bottom: 15px;
-  height: 25px;
-  position: relative;
-  overflow: hidden;
-}
-
-.skill-progress {
-  height: 100%;
-  border-radius: 10px;
-  background: linear-gradient(90deg, cyan, blue);
-  box-shadow: 0 0 10px cyan;
-  transition: width 1s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
 }
 
 </style>
@@ -215,6 +276,80 @@ body {
   </div>
 </div>
 
+<h2 class="seccion-titulo">Portafolio de Ejercicios</h2>
+
+<div class="clases-container">
+  
+  <div class="clase-card">
+    <div class="clase-header">
+      <h3>Clase 1</h3>
+      <span class="icono-clase">⚡</span>
+    </div>
+    <a href="Grafico de Barras.html" class="clase-item">
+      <span class="icono-archivo">📂</span> Gráfico de Barras.html
+    </a>
+    <a href="ejercicio4.html" class="clase-item">
+      <span class="icono-archivo">📂</span> Función Arriba.html
+    </a>
+    <a href="ejercicio4profe.html" class="clase-item">
+      <span class="icono-archivo">📂</span> Ejercicio Profe.html
+    </a>
+  </div>
+
+  <div class="clase-card">
+    <div class="clase-header">
+      <h3>Clase 2</h3>
+      <span class="icono-clase">⚡</span>
+    </div>
+    <a href="ejercicio4Abajo.html" class="clase-item">
+      <span class="icono-archivo">🔥</span> Función Abajo.html
+    </a>
+    <a href="ejercicio4derecha.html" class="clase-item">
+      <span class="icono-archivo">🔥</span> Función Derecha.html
+    </a>
+    <a href="ejercicio4izquierda.html" class="clase-item">
+      <span class="icono-archivo">🔥</span> Función Izquierda.html
+    </a>
+  </div>
+
+  <div class="clase-card">
+    <div class="clase-header">
+      <h3>Actividad Práctica</h3>
+      <span class="icono-clase">⚡</span>
+    </div>
+    <a href="lineadinamica.html" class="clase-item">
+      <span class="icono-archivo">📒</span> Línea Dinámica.html
+    </a>
+    <a href="lineadinamicaTrabajo.html" class="clase-item">
+      <span class="icono-archivo">📒</span> Trabajo Clase 1.html
+    </a>
+    <a href="lineadinamicaTrabajo.html" class="clase-item">
+      <span class="icono-archivo">📒</span> Trabajo Clase 2.html
+    </a>
+    
+  </div>
+
+  <div class="clase-card">
+    <div class="clase-header">
+      <h3>Clase 2</h3>
+      <span class="icono-clase">⚡</span>
+    </div>
+    <a href="ejercicio4Abajo.html" class="clase-item">
+      <span class="icono-archivo">⚡</span> Función Abajo.html
+    </a>
+    <a href="ejercicio4derecha.html" class="clase-item">
+      <span class="icono-archivo">⚡</span> Función Derecha.html
+    </a>
+    <a href="ejercicio4izquierda.html" class="clase-item">
+      <span class="icono-archivo">⚡</span> Función Izquierda.html
+    </a>
+  </div>
+
+</div>
+
+
+<h2 class="seccion-titulo" style="font-size: 20px; opacity: 0.7;">Todos los archivos (Vista Carpeta)</h2>
+
 <div class="grid">
   <a href="Grafico de Barras.html" class="folder"><div class="icon">📊</div><div class="title">Gráfico de Barras</div></a>
   <a href="ejercicio4.html" class="folder"><div class="icon">📈</div><div class="title">Función Arriba</div></a>
@@ -226,10 +361,9 @@ body {
   <a href="lineadinamicaTrabajo.html" class="folder"><div class="icon">🧪</div><div class="title">Trabajo Clase</div></a>
   <a href="lineadinamicaTrabajo.html" class="folder"><div class="icon">🧪</div><div class="title">Trabajo Clase</div></a>
 </div>
-
 <div class="habilidades">
   <h2>Habilidades Que desea adquirir</h2>
-  
+</div>
 
 <div id="escena"></div>
 
