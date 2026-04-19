@@ -1,12 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mis Prácticas</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    text-align: center;
+  }
+
+  h1 {
+    margin-top: 40px;
+    font-size: 2.5em;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 40px;
+  }
+
+  li {
+    margin: 15px 0;
+  }
+
+  a {
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    padding: 15px 25px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  a:hover {
+    background: #00c6ff;
+    color: black;
+    transform: scale(1.1);
+  }
+
+  /* Animación al cargar */
+  li {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: aparecer 0.6s forwards;
+  }
+
+  li:nth-child(1) { animation-delay: 0.2s; }
+  li:nth-child(2) { animation-delay: 0.4s; }
+  li:nth-child(3) { animation-delay: 0.6s; }
+  li:nth-child(4) { animation-delay: 0.8s; }
+  li:nth-child(5) { animation-delay: 1s; }
+  li:nth-child(6) { animation-delay: 1.2s; }
+  li:nth-child(7) { animation-delay: 1.4s; }
+  li:nth-child(8) { animation-delay: 1.6s; }
+
+  @keyframes aparecer {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
 <h1>Mis Prácticas de Computación Gráfica</h1>
 
 <ul>
-  <li><a href="Grafico de Barras.html">Ver la práctica de Gráfico de Barras</a></li>
-  <li><a href="ejercicio4.html">Ejercicio 4 Función Matemática (Arriba)</a></li>
+  <li><a href="Grafico de Barras.html">Gráfico de Barras</a></li>
+  <li><a href="ejercicio4.html">Función Matemática (Arriba)</a></li>
   <li><a href="ejericio4profe.html">Ejercicio 4 (Profe)</a></li>
   <li><a href="ejercicio4Abajo.html">Función hacia abajo</a></li>
   <li><a href="ejercicio4derecha.html">Función hacia la derecha</a></li>
   <li><a href="ejercicio4izquierda.html">Función hacia la izquierda</a></li>
-  <li><a href="lineadinamica.html">Linea Dinamica</a></li>
-  <li><a href="lineadinamicaTrabajo.html">Linea Dinamica TRABAJO CLASE 17/05/26</a></li>
+  <li><a href="lineadinamica.html">Línea Dinámica</a></li>
+  <li><a href="lineadinamicaTrabajo.html">Trabajo Clase 17/05/26</a></li>
 </ul>
+
+</body>
+</html>
