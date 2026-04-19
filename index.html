@@ -143,13 +143,14 @@ body {
   </div>
 
   <div class="info">
-    <div class="nombre">Erick</div>
-    <div class="nivel">Nivel 12</div>
+    <div class="nombre">Erick Jeandet Quispe Herrera</div>
+    <div class="nivel">Codigo: 202102016A</div>
     <p>Computación Gráfica</p>
   </div>
 
   <div class="lateral">
-    <p>Prácticas: 8</p>
+    <br>
+    <br>
     <p>Curso: Activo</p>
   </div>
 </div>
@@ -196,8 +197,126 @@ body {
     <div class="icon">🧪</div>
     <div class="title">Trabajo Clase</div>
   </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+
 
 </div>
+<div id="escena"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / 400,
+  0.1,
+  1000
+);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, 400);
+document.getElementById("escena").appendChild(renderer.domElement);
+
+// MATERIAL
+const material = new THREE.MeshBasicMaterial({
+  color: 0x00ffff,
+  wireframe: true
+});
+
+// FIGURA 1
+const fig1 = new THREE.Mesh(
+  new THREE.TorusKnotGeometry(2, 0.6, 50, 12),
+  material
+);
+fig1.position.x = -8;
+
+// 👉 ESTA YA ESTÁ BIEN, no tocar mucho
+fig1.scale.set(1, 1, 1);
+
+
+// FIGURA 2
+const fig2 = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(1.8, 1),
+  material
+);
+
+// 👉 LA HACEMOS MÁS GRANDE
+fig2.scale.set(1.4, 1.4, 1.4);
+
+
+// FIGURA 3
+const fig3 = new THREE.Mesh(
+  new THREE.ConeGeometry(1.5, 3, 32),
+  material
+);
+fig3.position.x = 8;
+
+// 👉 TAMBIÉN MÁS GRANDE
+fig3.scale.set(1.5, 1.5, 1.5);
+
+
+// AGREGAR
+scene.add(fig1, fig2, fig3);
+
+// CÁMARA
+camera.position.z = 10;
+
+// ANIMACIÓN
+function animate() {
+  requestAnimationFrame(animate);
+
+  fig1.rotation.x += 0.005;
+  fig1.rotation.y += 0.007;
+
+  fig2.rotation.y += 0.006;
+
+  fig3.rotation.x += 0.006;
+
+  renderer.render(scene, camera);
+}
+animate();
+</script>
 </body>
 </html>
