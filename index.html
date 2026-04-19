@@ -2,89 +2,202 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mis Prácticas</title>
+<title>Mi Perfil</title>
 
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    color: white;
-    text-align: center;
-  }
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(90deg, #000, #1a0033, #000);
+  color: white;
+}
 
-  h1 {
-    margin-top: 40px;
-    font-size: 2.5em;
-  }
+/* PERFIL */
+.perfil {
+  display: flex;
+  max-width: 900px;
+  margin: 50px auto 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 40px;
-  }
+/* AVATAR CON EFECTO */
+.avatar {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
 
-  li {
-    margin: 15px 0;
-  }
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+}
 
-  a {
-    display: inline-block;
-    text-decoration: none;
-    color: white;
-    background: rgba(255,255,255,0.1);
-    padding: 15px 25px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-  }
+/* ARO GIRATORIO */
+.avatar::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, cyan, blue, purple, cyan);
+  animation: girar 4s linear infinite;
+  z-index: 1;
+}
 
-  a:hover {
-    background: #00c6ff;
-    color: black;
-    transform: scale(1.1);
-  }
+/* GLOW */
+.avatar::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, cyan, blue, purple, cyan);
+  filter: blur(20px);
+  opacity: 0.7;
+  z-index: 0;
+}
 
-  /* Animación al cargar */
-  li {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: aparecer 0.6s forwards;
-  }
+/* ANIMACIÓN */
+@keyframes girar {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
-  li:nth-child(1) { animation-delay: 0.2s; }
-  li:nth-child(2) { animation-delay: 0.4s; }
-  li:nth-child(3) { animation-delay: 0.6s; }
-  li:nth-child(4) { animation-delay: 0.8s; }
-  li:nth-child(5) { animation-delay: 1s; }
-  li:nth-child(6) { animation-delay: 1.2s; }
-  li:nth-child(7) { animation-delay: 1.4s; }
-  li:nth-child(8) { animation-delay: 1.6s; }
+.info {
+  margin-left: 20px;
+}
 
-  @keyframes aparecer {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+.nombre {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.nivel {
+  color: #00c6ff;
+}
+
+.lateral {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* CARPETAS */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 20px auto 50px;
+  padding: 20px;
+}
+
+.folder {
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  padding: 20px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 10px rgba(0,255,255,0.2);
+}
+
+.folder:hover {
+  transform: scale(1.1);
+  background: #00c6ff;
+  color: black;
+  box-shadow: 0 0 20px cyan;
+}
+
+.icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+}
 
 </style>
 </head>
 
 <body>
 
-<h1>Mis Prácticas de Computación Gráfica</h1>
+<!-- PERFIL -->
+<div class="perfil">
+  <div class="avatar">
+    <!-- AQUÍ PUEDES CAMBIAR TU IMAGEN -->
+    <img src="img/perfil.png">
+  </div>
 
-<ul>
-  <li><a href="Grafico de Barras.html">Gráfico de Barras</a></li>
-  <li><a href="ejercicio4.html">Función Matemática (Arriba)</a></li>
-  <li><a href="ejericio4profe.html">Ejercicio 4 (Profe)</a></li>
-  <li><a href="ejercicio4Abajo.html">Función hacia abajo</a></li>
-  <li><a href="ejercicio4derecha.html">Función hacia la derecha</a></li>
-  <li><a href="ejercicio4izquierda.html">Función hacia la izquierda</a></li>
-  <li><a href="lineadinamica.html">Línea Dinámica</a></li>
-  <li><a href="lineadinamicaTrabajo.html">Trabajo Clase 17/05/26</a></li>
-</ul>
+  <div class="info">
+    <div class="nombre">Erick</div>
+    <div class="nivel">Nivel 12</div>
+    <p>Computación Gráfica</p>
+  </div>
+
+  <div class="lateral">
+    <p>Prácticas: 8</p>
+    <p>Curso: Activo</p>
+  </div>
+</div>
+
+<!-- CARPETAS -->
+<div class="grid">
+
+  <a href="Grafico de Barras.html" class="folder">
+    <div class="icon">📊</div>
+    <div class="title">Gráfico de Barras</div>
+  </a>
+
+  <a href="ejercicio4.html" class="folder">
+    <div class="icon">📈</div>
+    <div class="title">Función Arriba</div>
+  </a>
+
+  <a href="ejercicio4profe.html" class="folder">
+    <div class="icon">👨‍🏫</div>
+    <div class="title">Ejercicio Profe</div>
+  </a>
+
+  <a href="ejercicio4Abajo.html" class="folder">
+    <div class="icon">⬇️</div>
+    <div class="title">Función Abajo</div>
+  </a>
+
+  <a href="ejercicio4derecha.html" class="folder">
+    <div class="icon">➡️</div>
+    <div class="title">Función Derecha</div>
+  </a>
+
+  <a href="ejercicio4izquierda.html" class="folder">
+    <div class="icon">⬅️</div>
+    <div class="title">Función Izquierda</div>
+  </a>
+
+  <a href="lineadinamica.html" class="folder">
+    <div class="icon">📏</div>
+    <div class="title">Línea Dinámica</div>
+  </a>
+
+  <a href="lineadinamicaTrabajo.html" class="folder">
+    <div class="icon">🧪</div>
+    <div class="title">Trabajo Clase</div>
+  </a>
+
+</div>
 
 </body>
 </html>
