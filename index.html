@@ -2,12 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mi Perfil</title>
+<title>Mi Perfil - Erick Quispe</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
+  /* ¡RESTAURADO TU FONDO DEGRADADO ORIGINAL! */
   background: linear-gradient(90deg, #000, #1a0033, #000);
   color: white;
 }
@@ -21,6 +22,7 @@ body {
   border-radius: 15px;
   padding: 20px;
   backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
 }
 
 /* AVATAR CON EFECTO */
@@ -100,7 +102,7 @@ body {
   max-width: 900px;
   margin: 20px auto 50px;
   padding: 20px;
-  justify-content: center; /* NUEVO: Centra las carpetas si no llenan la fila */
+  justify-content: center;
 }
 
 .folder {
@@ -135,13 +137,54 @@ body {
   font-weight: bold;
 }
 
-/* NUEVO: Contenedor de la escena 3D centrado */
+/* CONTENEDOR 3D CENTRADO */
 #escena {
   max-width: 900px;
   margin: 0 auto 50px auto;
+  background: #000;
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(800px);
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+}
+
+/* SECCIÓN EXTRA: Habilidades */
+.habilidades {
+  max-width: 900px;
+  margin: 0 auto 50px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.habilidades h2 {
+  color: #00c6ff;
+  text-shadow: 0 0 5px cyan;
+  margin-bottom: 30px;
+}
+
+.skill-bar {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  height: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-progress {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, cyan, blue);
+  box-shadow: 0 0 10px cyan;
+  transition: width 1s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
 }
 
 </style>
@@ -168,46 +211,28 @@ body {
 </div>
 
 <div class="grid">
+  <a href="Grafico de Barras.html" class="folder"><div class="icon">📊</div><div class="title">Gráfico de Barras</div></a>
+  <a href="ejercicio4.html" class="folder"><div class="icon">📈</div><div class="title">Función Arriba</div></a>
+  <a href="ejercicio4profe.html" class="folder"><div class="icon">👨‍🏫</div><div class="title">Ejercicio Profe</div></a>
+  <a href="ejercicio4Abajo.html" class="folder"><div class="icon">⬇️</div><div class="title">Función Abajo</div></a>
+  <a href="ejercicio4derecha.html" class="folder"><div class="icon">➡️</div><div class="title">Función Derecha</div></a>
+  <a href="ejercicio4izquierda.html" class="folder"><div class="icon">⬅️</div><div class="title">Función Izquierda</div></a>
+  <a href="lineadinamica.html" class="folder"><div class="icon">📏</div><div class="title">Línea Dinámica</div></a>
+  <a href="lineadinamicaTrabajo.html" class="folder"><div class="icon">🧪</div><div class="title">Trabajo Clase</div></a>
+  <a href="lineadinamicaTrabajo.html" class="folder"><div class="icon">🧪</div><div class="title">Trabajo Clase</div></a>
+</div>
 
-  <a href="Grafico de Barras.html" class="folder">
-    <div class="icon">📊</div>
-    <div class="title">Gráfico de Barras</div>
-  </a>
-
-  <a href="ejercicio4.html" class="folder">
-    <div class="icon">📈</div>
-    <div class="title">Función Arriba</div>
-  </a>
-
-  <a href="ejercicio4profe.html" class="folder">
-    <div class="icon">👨‍🏫</div>
-    <div class="title">Ejercicio Profe</div>
-  </a>
-
-  <a href="ejercicio4Abajo.html" class="folder">
-    <div class="icon">⬇️</div>
-    <div class="title">Función Abajo</div>
-  </a>
-
-  <a href="ejercicio4derecha.html" class="folder">
-    <div class="icon">➡️</div>
-    <div class="title">Función Derecha</div>
-  </a>
-
-  <a href="ejercicio4izquierda.html" class="folder">
-    <div class="icon">⬅️</div>
-    <div class="title">Función Izquierda</div>
-  </a>
-
-  <a href="lineadinamica.html" class="folder">
-    <div class="icon">📏</div>
-    <div class="title">Línea Dinámica</div>
-  </a>
-
-  <a href="lineadinamicaTrabajo.html" class="folder">
-    <div class="icon">🧪</div>
-    <div class="title">Trabajo Clase</div>
-  </a>
+<div class="habilidades">
+  <h2>Habilidades Destacadas</h2>
+  <div class="skill-bar">
+    <div class="skill-progress" style="width: 85%;">Computación Gráfica 85%</div>
+  </div>
+  <div class="skill-bar">
+    <div class="skill-progress" style="width: 70%;">Modelado 3D 70%</div>
+  </div>
+  <div class="skill-bar">
+    <div class="skill-progress" style="width: 90%;">JavaScript / Three.js 90%</div>
+  </div>
 </div>
 
 <div id="escena"></div>
@@ -217,9 +242,9 @@ body {
 <script>
 const scene = new THREE.Scene();
 
-// NUEVO: Calculamos el ancho para que encaje con tu diseño de 900px
-const containerWidth = Math.min(window.innerWidth - 40, 900);
-const containerHeight = 350;
+// Ajuste del tamaño para encajar perfecto
+const containerWidth = Math.min(window.innerWidth - 80, 860);
+const containerHeight = 320;
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -228,59 +253,49 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-// NUEVO: alpha: true hace que el fondo de Three.js sea transparente
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(containerWidth, containerHeight);
 document.getElementById("escena").appendChild(renderer.domElement);
 
-// MATERIAL
 const material = new THREE.MeshBasicMaterial({
   color: 0x00ffff,
   wireframe: true
 });
 
-// FIGURA 1
 const fig1 = new THREE.Mesh(
   new THREE.TorusKnotGeometry(2, 0.6, 50, 12),
   material
 );
-fig1.position.x = -8; // Ajustado para el nuevo ancho
+fig1.position.x = -7; 
 fig1.scale.set(1, 1, 1);
 
-
-// FIGURA 2
 const fig2 = new THREE.Mesh(
   new THREE.IcosahedronGeometry(1.8, 1),
   material
 );
-fig2.position.x = 0; // Se queda en el centro
+fig2.position.x = 0; 
 fig2.scale.set(1.4, 1.4, 1.4);
 
-
-// FIGURA 3
 const fig3 = new THREE.Mesh(
   new THREE.ConeGeometry(1.5, 3, 32),
   material
 );
-fig3.position.x = 7; // Ajustado para el nuevo ancho
+fig3.position.x = 7; 
 fig3.scale.set(1.5, 1.5, 1.5);
 
-// AGREGAR
 scene.add(fig1, fig2, fig3);
 
-// CÁMARA
-camera.position.z = 8; // Acercamos un poco la cámara
+camera.position.z = 8; 
 
-// ANIMACIÓN
 function animate() {
   requestAnimationFrame(animate);
 
-  fig1.rotation.x += 0.005;
+  fig1.rotation.x += 0.05;
   fig1.rotation.y += 0.07;
 
   fig2.rotation.y += 0.06;
 
-  fig3.rotation.x += 0.05;
+  fig3.rotation.x += 0.06;
 
   renderer.render(scene, camera);
 }
