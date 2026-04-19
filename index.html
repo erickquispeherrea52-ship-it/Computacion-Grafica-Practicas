@@ -100,6 +100,7 @@ body {
   max-width: 900px;
   margin: 20px auto 50px;
   padding: 20px;
+  justify-content: center; /* NUEVO: Centra las carpetas si no llenan la fila */
 }
 
 .folder {
@@ -111,6 +112,10 @@ body {
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
   box-shadow: 0 0 10px rgba(0,255,255,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .folder:hover {
@@ -130,15 +135,22 @@ body {
   font-weight: bold;
 }
 
+/* NUEVO: Contenedor de la escena 3D centrado */
+#escena {
+  max-width: 900px;
+  margin: 0 auto 50px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- PERFIL -->
 <div class="perfil">
   <div class="avatar">
-    <!-- AQUÍ PUEDES CAMBIAR TU IMAGEN -->
     <img src="perfil.jpeg">
   </div>
 
@@ -155,7 +167,6 @@ body {
   </div>
 </div>
 
-<!-- CARPETAS -->
 <div class="grid">
 
   <a href="Grafico de Barras.html" class="folder">
@@ -239,8 +250,8 @@ body {
     <div class="title">Trabajo Clase</div>
   </a>
 
-
 </div>
+
 <div id="escena"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
@@ -248,15 +259,20 @@ body {
 <script>
 const scene = new THREE.Scene();
 
+// NUEVO: Calculamos el ancho para que encaje con tu diseño de 900px
+const containerWidth = Math.min(window.innerWidth - 40, 900);
+const containerHeight = 350;
+
 const camera = new THREE.PerspectiveCamera(
   75,
-  window.innerWidth / 400,
+  containerWidth / containerHeight,
   0.1,
   1000
 );
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, 400);
+// NUEVO: alpha: true hace que el fondo de Three.js sea transparente
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(containerWidth, containerHeight);
 document.getElementById("escena").appendChild(renderer.domElement);
 
 // MATERIAL
@@ -270,9 +286,7 @@ const fig1 = new THREE.Mesh(
   new THREE.TorusKnotGeometry(2, 0.6, 50, 12),
   material
 );
-fig1.position.x = -8;
-
-// 👉 ESTA YA ESTÁ BIEN, no tocar mucho
+fig1.position.x = -8; // Ajustado para el nuevo ancho
 fig1.scale.set(1, 1, 1);
 
 
@@ -281,8 +295,7 @@ const fig2 = new THREE.Mesh(
   new THREE.IcosahedronGeometry(1.8, 1),
   material
 );
-
-// 👉 LA HACEMOS MÁS GRANDE
+fig2.position.x = 0; // Se queda en el centro
 fig2.scale.set(1.4, 1.4, 1.4);
 
 
@@ -291,28 +304,25 @@ const fig3 = new THREE.Mesh(
   new THREE.ConeGeometry(1.5, 3, 32),
   material
 );
-fig3.position.x = 8;
-
-// 👉 TAMBIÉN MÁS GRANDE
+fig3.position.x = 7; // Ajustado para el nuevo ancho
 fig3.scale.set(1.5, 1.5, 1.5);
-
 
 // AGREGAR
 scene.add(fig1, fig2, fig3);
 
 // CÁMARA
-camera.position.z = 10;
+camera.position.z = 8; // Acercamos un poco la cámara
 
 // ANIMACIÓN
 function animate() {
   requestAnimationFrame(animate);
 
   fig1.rotation.x += 0.005;
-  fig1.rotation.y += 0.007;
+  fig1.rotation.y += 0.07;
 
-  fig2.rotation.y += 0.006;
+  fig2.rotation.y += 0.06;
 
-  fig3.rotation.x += 0.006;
+  fig3.rotation.x += 0.05;
 
   renderer.render(scene, camera);
 }
