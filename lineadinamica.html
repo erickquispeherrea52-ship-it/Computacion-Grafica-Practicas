@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Línea dinámica</title>
+</head>
+<body>
+
+<h3>Línea Dinámica</h3>
+
+<canvas id="myCanvas" width="800" height="400" style="border: 1px solid black;"></canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+var xstart = 0;
+var xend = 800;
+var step  = 0.1;
+var time = 0;
+
+function drawGraph() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ejes
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+
+    ctx.stroke();
+
+    // NÚMEROS
+    ctx.fillStyle = "black";
+    ctx.font = "10px Arial";
+
+    for (let i = 0; i <= canvas.width; i += 50) {
+        let valorX = i - canvas.width / 2;
+        if (valorX !== 0) {
+            ctx.fillText(valorX, i, canvas.height / 2 + 15);
+        }
+    }
+
+    for (let i = 0; i <= canvas.height; i += 50) {
+        let valorY = canvas.height / 2 - i;
+        if (valorY !== 0) {
+            ctx.fillText(valorY, canvas.width / 2 + 5, i);
+        }
+    }
+
+    ctx.fillText("0", canvas.width / 2 + 5, canvas.height / 2 + 15);
+
+    // 🔵 FUNCIÓN SENO
+    ctx.beginPath();
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+
+    for (var x = xstart; x < xend; x += step) {
+        var y = Math.sin(x * 0.01 + time);
+
+        if (x === xstart) {
+            ctx.moveTo(x, canvas.height / 2 - y * 100);
+        } else {
+            ctx.lineTo(x, canvas.height / 2 - y * 100);
+        }
+    }
+
+    ctx.stroke();
+
+    // 🔴 PUNTO INICIAL (x = 0)
+    var y0 = Math.sin(time);
+
+    ctx.beginPath();
+    ctx.arc(0, canvas.height / 2 - y0 * 100, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+}
+
+// animación
+function animate() {
+    drawGraph();
+    time += 0.04;
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>

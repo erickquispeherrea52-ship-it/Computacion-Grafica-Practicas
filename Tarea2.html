@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+
+<h2>Puntos en Movimiento</h2>
+<canvas id="canvasPuntos" width="600" height="500" style="border:1px solid black;"></canvas>
+
+<script>
+var canvas = document.getElementById("canvasPuntos");
+var ctx = canvas.getContext("2d");
+
+var puntos = [];
+
+// colores
+var colores = ["red", "blue", "green", "orange", "purple"];
+
+// crear puntos
+for (var i = 0; i < 5; i++) {
+    puntos.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        color: colores[i]
+    });
+}
+
+// dibujar puntos
+function drawPoints() {
+
+    // 🔹 fondo
+    ctx.fillStyle = "#f0f0f0";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (var i = 0; i < puntos.length; i++) {
+
+        // 🔹 punto con sombra y borde
+        ctx.beginPath();
+        ctx.arc(puntos[i].x, puntos[i].y, 5, 0, Math.PI * 2);
+
+        ctx.fillStyle = puntos[i].color;
+
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 5;
+
+        ctx.fill();
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "white";
+        ctx.stroke();
+    }
+
+    ctx.shadowBlur = 0;
+}
+
+// mover puntos
+function moverPuntos() {
+    for (var i = 0; i < puntos.length; i++) {
+        puntos[i].x = Math.random() * canvas.width;
+        puntos[i].y = Math.random() * canvas.height;
+    }
+}
+
+// actualizar cada segundo
+setInterval(function() {
+    moverPuntos();
+    drawPoints();
+}, 1000);
+
+// inicial
+drawPoints();
+</script>
+
+</body>
+</html>

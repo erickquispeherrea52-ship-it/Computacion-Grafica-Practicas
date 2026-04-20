@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+
+<h2>Gráfico de Barras Dinámico</h2>
+<canvas id="canvasBarras" width="500" height="500" style="border:1px solid black;"></canvas>
+
+<script>
+var canvas = document.getElementById("canvasBarras");
+var ctx = canvas.getContext("2d");
+
+var valores = [50, 60, 70, 80, 90];
+
+var colores = ["red", "green", "blue", "orange", "purple"];
+
+// generar valores aleatorios
+function generarValores() {
+    for (var i = 0; i < valores.length; i++) {
+        valores[i] = Math.floor(Math.random() * 90) + 10;
+    }
+}
+
+// dibujar barras
+function drawBars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    var ancho = 50;
+    var escala = 5; // 
+
+    for (var i = 0; i < valores.length; i++) {
+        var altura = valores[i] * escala;
+        var x = 50 + i * 80;
+        var y = canvas.height - altura;
+
+        ctx.fillStyle = colores[i]; // 
+        ctx.fillRect(x, y, ancho, altura);
+    }
+}
+
+// actualizar cada segundo
+setInterval(function() {
+    generarValores();
+    drawBars();
+}, 1000);
+
+// dibujar inicial
+drawBars();
+</script>
+
+</body>
+</html>

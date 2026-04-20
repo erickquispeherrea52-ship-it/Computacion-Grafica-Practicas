@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Línea dinámica</title>
+</head>
+<body>
+
+<h2>Realizado por: Erick Jeandet Quispe Herrera</h2>
+<h3>Línea Dinámica</h3>
+
+<canvas id="myCanvas" width="800" height="400" style="border: 1px solid black;"></canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+var xstart = 0;
+var xend = 800;
+var step  = 0.1;
+
+var time1 = 0; // tiempo para azul
+var time2 = 0; // tiempo para rojo
+
+function drawGraph() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ejes
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+
+    ctx.stroke();
+
+    // NÚMEROS
+    ctx.fillStyle = "black";
+    ctx.font = "10px Arial";
+
+    for (let i = 0; i <= canvas.width; i += 50) {
+        let valorX = i - canvas.width / 2;
+        if (valorX !== 0) {
+            ctx.fillText(valorX, i, canvas.height / 2 + 15);
+        }
+    }
+
+    for (let i = 0; i <= canvas.height; i += 50) {
+        let valorY = canvas.height / 2 - i;
+        if (valorY !== 0) {
+            ctx.fillText(valorY, canvas.width / 2 + 5, i);
+        }
+    }
+
+    ctx.fillText("0", canvas.width / 2 + 5, canvas.height / 2 + 15);
+
+    //  FUNCIÓN 1 Azul
+    ctx.beginPath();
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+
+    for (var x = xstart; x < xend; x += step) {
+        var y = Math.sin(x * 0.01 + time1);
+
+        if (x === xstart) {
+            ctx.moveTo(x, canvas.height / 2 - y * 100);
+        } else {
+            ctx.lineTo(x, canvas.height / 2 - y * 100);
+        }
+    }
+
+    ctx.stroke();
+
+    //  FUNCIÓN 2 verde
+    ctx.beginPath();
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 2;
+
+    for (var x = xstart; x < xend; x += step) {
+        var y = Math.sin(x * 0.02 + time2); // diferente frecuencia
+
+        if (x === xstart) {
+            ctx.moveTo(x, canvas.height / 2 - y * 100);
+        } else {
+            ctx.lineTo(x, canvas.height / 2 - y * 100);
+        }
+    }
+
+    ctx.stroke();
+}
+
+// animación
+function animate() {
+    drawGraph();
+
+    time1 += 0.08; // velocidad azul
+    time2 += 0.04; // velocidad roja (más lenta)
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
