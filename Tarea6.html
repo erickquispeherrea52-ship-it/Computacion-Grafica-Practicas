@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica 3: Manipulación Interactiva 3D</title>
+    <style>
+        body {
+            margin: 0;
+            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        /* CONTENEDOR UNIFICADO EN CYAN NEÓN */
+        #contenedor-principal {
+            position: relative;
+            width: 1000px;
+            height: 700px;
+            border: 3px solid #00f7ff; 
+            box-shadow: 0 0 25px rgba(0, 247, 255, 0.4);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        /* PANEL DE INSTRUCCIONES ESTILO CYAN */
+        #info { 
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(10, 10, 20, 0.85);
+            color: #00f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00f7ff;
+            font-size: 13px;
+            line-height: 1.6;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .tecla {
+            color: #fff;
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border-bottom: 2px solid #000;
+            font-weight: bold;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="contenedor-principal">
+    <div id="info">
+        <strong style="font-size: 15px; display: block; margin-bottom: 5px;">CONTROLES INTERACTIVOS</strong>
+        <span class="tecla">↑</span> <span class="tecla">↓</span> <span class="tecla">←</span> <span class="tecla">→</span> : Traslación<br>
+        <span class="tecla">Q</span> / <span class="tecla">E</span> : Rotación (Eje Y)<br>
+        <span class="tecla">Z</span> / <span class="tecla">X</span> : Escalado (Tamaño)
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    //  1. CONFIGURACIÓN DE LA ESCENA 
+    const contenedor = document.getElementById('contenedor-principal');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000); 
+
+    const camera = new THREE.PerspectiveCamera(90, 1000 / 700, 0.6, 1500);
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(1000, 800);
+    contenedor.appendChild(renderer.domElement);
+
+    // --- 2. OBJETO PRINCIPAL ---
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const material = new THREE.MeshNormalMaterial(); 
+    const cubo = new THREE.Mesh(geometry, material);
+    scene.add(cubo);
+
+    //  3. MANIPULACIÓN INTERACTIVA 
+    window.addEventListener('keydown', (event) => {
+        const step = 0.2;      
+        const rotateStep = 0.1; 
+        const scaleStep = 0.1;  
+
+        switch(event.key.toUpperCase()) {
+            // TRASLACIÓN
+            case 'ARROWUP':    cubo.position.y += step; break;
+            case 'ARROWDOWN':  cubo.position.y -= step; break;
+            case 'ARROWLEFT':  cubo.position.x -= step; break;
+            case 'ARROWRIGHT': cubo.position.x += step; break;
+
+            // ROTACIÓN
+            case 'Q': cubo.rotation.y -= rotateStep; break;
+            case 'E': cubo.rotation.y += rotateStep; break;
+
+            // ESCALADO
+            case 'Z': 
+                cubo.scale.x += scaleStep;
+                cubo.scale.y += scaleStep;
+                cubo.scale.z += scaleStep;
+                break;
+            case 'X': 
+                cubo.scale.x = Math.max(0.2, cubo.scale.x - scaleStep);
+                cubo.scale.y = Math.max(0.2, cubo.scale.y - scaleStep);
+                cubo.scale.z = Math.max(0.2, cubo.scale.z - scaleStep);
+                break;
+        }
+    });
+
+    // 4. CICLO DE ANIMACIÓN 
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>

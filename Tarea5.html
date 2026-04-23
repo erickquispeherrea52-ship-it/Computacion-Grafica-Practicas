@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica 2: Rotación Tridimensional Pro</title>
+    <style>
+        /* ESTILO GENERAL Y FONDO (Punto: Presentación Bonita) */
+        body {
+            margin: 0;
+            background: radial-gradient(circle, #1a1a2e 0%, #0f0f1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* CONTENEDOR PRINCIPAL CON MARCO NEÓN */
+        #contenedor-principal {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            border: 3px solid #00f7ff;
+            box-shadow: 0 0 25px rgba(0, 247, 255, 0.4), inset 0 0 10px rgba(0, 247, 255, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        /* EL CANVAS DE THREE.JS */
+        canvas {
+            display: block;
+        }
+
+        /* PANEL DE CONTROL PARA LA COMPARACIÓN (Punto Clave) */
+        #panel-controles {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(10, 10, 20, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 247, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: #00f7ff;
+            pointer-events: auto; /* Permite clics sobre el panel */
+        }
+
+        /* ESTILO DE LOS BOTONES DE CONTROL */
+        .boton-control {
+            background: transparent;
+            border: 1px solid #00f7ff;
+            color: #00f7ff;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .boton-control:hover {
+            background: #00f7ff;
+            color: #0f0f1a;
+            box-shadow: 0 0 10px #00f7ff;
+        }
+
+        .boton-control.activo {
+            background: rgba(0, 247, 255, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="contenedor-principal">
+        <div id="panel-controles">
+            <span>Controles de Rotación</span>
+            <button class="boton-control activo" id="btn-x">Eje X (Vertical)</button>
+            <button class="boton-control" id="btn-y">Eje Y (Horizontal)</button>
+            <button class="boton-control" id="btn-ambos">Ambos Ejes</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // --- 1. CONFIGURACIÓN BÁSICA (La forma de tu profesor) ---
+        const contenedor = document.getElementById('contenedor-principal');
+        const width = 800;
+        const height = 500;
+
+        // CREAR LA ESCENA (Punto: Fondo Negro)
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000); // Negro absoluto para contraste máximo
+
+        // CREAR LA CÁMARA (Punto: Cámara Frontal)
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        camera.position.z = 4; // Ligeramente más cerca para que el cubo se vea grande
+
+        // CREAR EL RENDERIZADOR
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        contenedor.appendChild(renderer.domElement);
+
+        // --- 2. CREAR EL CUBO (La forma de tu profesor) ---
+        // Aumentamos el tamaño a 1.5 para que no se vea chiquito
+        const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+        // MeshNormalMaterial es el que pone colores automáticos a las caras
+        const material = new THREE.MeshNormalMaterial(); 
+        const cubo = new THREE.Mesh(geometry, material);
+        scene.add(cubo);
+
+        // --- 3. LÓGICA DE CONTROL DE ROTACIÓN (Punto: Comparar visualmente) ---
+        
+        // Velocidades de rotación base
+        const velocidadX = 0.015;
+        const velocidadY = 0.025;
+        
+        // Estado actual de la rotación
+        let rotarX = true;
+        let rotarY = false;
+
+        // --- 4. ANIMACIÓN (Punto: Rotación continua) ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Aplicar rotaciones según el estado de los controles
+            if (rotarX) cubo.rotation.x += velocidadX;
+            if (rotarY) cubo.rotation.y += velocidadY;
+
+            renderer.render(scene, camera);
+        }
+
+        // --- 5. EVENTOS DE LOS BOTONES (Lógica de comparación) ---
+        const btnX = document.getElementById('btn-x');
+        const btnY = document.getElementById('btn-y');
+        const btnAmbos = document.getElementById('btn-ambos');
+        const btnDetener = document.getElementById('btn-detener');
+
+        function desactivarBotones() {
+            [btnX, btnY, btnAmbos, btnDetener].forEach(btn => btn.classList.remove('activo'));
+        }
+
+        btnX.addEventListener('click', () => {
+            desactivarBotones();
+            btnX.classList.add('activo');
+            rotarX = true;
+            rotarY = false;
+        });
+
+        btnY.addEventListener('click', () => {
+            desactivarBotones();
+            btnY.classList.add('activo');
+            rotarX = false;
+            rotarY = true;
+        });
+
+        btnAmbos.addEventListener('click', () => {
+            desactivarBotones();
+            btnAmbos.classList.add('activo');
+            rotarX = true;
+            rotarY = true;
+        });
+
+        // INICIAR ANIMACIÓN
+        animate();
+
+    </script>
+</body>
+</html>
