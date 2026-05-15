@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Editor 3D Pro - Extrusión Reparada y GLB</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #0a0a12; }
+        #info {
+            position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.85);
+            color: white; padding: 12px 18px; border-radius: 8px; backdrop-filter: blur(5px);
+            z-index: 10; font-size: 14px; pointer-events: none; border-left: 4px solid #ff9800;
+        }
+        #controls {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(30,30,40,0.95); backdrop-filter: blur(8px); padding: 12px;
+            border-radius: 12px; display: flex; justify-content: center; gap: 10px;
+            flex-wrap: wrap; z-index: 20; pointer-events: auto; font-weight: bold; border: 1px solid #444;
+        }
+        button {
+            background: #ff9800; border: none; color: #1e1e2a; padding: 6px 16px;
+            border-radius: 40px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        button:hover:not(:disabled) { background: #ffb74d; transform: scale(1.05); }
+        button.reset { background: #555; color: white; }
+        button.extrude { background: #4caf50; color: white; }
+        button.delete { background: #d32f2f; color: white; }
+        button.scale { background: #2196f3; color: white; }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
+        .status {
+            background: #1e1e2a; padding: 4px 12px; border-radius: 40px;
+            font-family: monospace; color: #ff9800; font-size: 13px; border: 1px solid #333;
+        }
+        .status span { color: white; }
+        .instruccion { font-size: 11px; background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 20px; width: 100%; text-align: center; margin-top: 5px; color: #ccc;}
+        .limit-warning {
+            background: #aa3300; color: #ffcc88; padding: 4px 10px; border-radius: 20px;
+            font-size: 12px; font-weight: normal; display: none; position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        🧊 <strong>Editor 3D Pro</strong> | Cubo Interactivo<br>
+        🖱️ Selecciona una cara azul. Haz clic en "Extruir" para generar la pieza turquesa.
+    </div>
+    <div id="limitWarning" class="limit-warning">⚠️ Límite alcanzado</div>
+    <div id="controls">
+        <div class="status">📌 Cara: <span id="selectedFace">Ninguna</span></div>
+        <div class="status">📐 Tamaño: <span id="scaleVal">1.00</span></div>
+        <div class="status">💎 Extruidas: <span id="extrudedCount">0</span>/6</div>
+        
+        <button id="extrudeBtn" class="extrude" disabled>✨ Extruir</button>
+        <button id="clearFaceBtn" class="delete" disabled>🗑️ Limpiar Cara</button>
+        <button id="undoExtrudeBtn" class="delete" disabled>↩️ Deshacer</button>
+        <button id="scaleDownBtn" class="scale">🔽 - Escalar</button>
+        <button id="scaleUpBtn" class="scale">🔼 + Escalar</button>
+        <button id="resetBtn" class="reset">🔄 Reiniciar Todo</button>
+        
+        <div class="instruccion">
+            🔄 Rotar: R/T, F/G, V/B | 🚶 Mover: WASD, Q/E | 📐 Escalar: Z / X
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a12);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 4, 7);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(2, 5, 3);
+        scene.add(dirLight);
+
+        let currentCube = null;
+        let extrudedParts = new Map();
+        let extrusionOrder = [];
+        let selectedFaceLocal = null;
+        let highlightGroup = null;
+        let currentScale = 1.0;
+
+        const scaleLimits = { min: 0.3, max: 2.0 };
+        const cubeVertices = [
+            new THREE.Vector3(-0.5, -0.5, 0.5), new THREE.Vector3(0.5, -0.5, 0.5),
+            new THREE.Vector3(0.5, 0.5, 0.5), new THREE.Vector3(-0.5, 0.5, 0.5),
+            new THREE.Vector3(-0.5, -0.5, -0.5), new THREE.Vector3(0.5, -0.5, -0.5),
+            new THREE.Vector3(0.5, 0.5, -0.5), new THREE.Vector3(-0.5, 0.5, -0.5)
+        ];
+        
+        const faceQuads = [
+            { name: "Derecha", normal: new THREE.Vector3(1, 0, 0), verts: [1, 5, 6, 2], center: new THREE.Vector3(0.5, 0, 0) },
+            { name: "Izquierda", normal: new THREE.Vector3(-1, 0, 0), verts: [4, 0, 3, 7], center: new THREE.Vector3(-0.5, 0, 0) },
+            { name: "Arriba", normal: new THREE.Vector3(0, 1, 0), verts: [3, 2, 6, 7], center: new THREE.Vector3(0, 0.5, 0) },
+            { name: "Abajo", normal: new THREE.Vector3(0, -1, 0), verts: [0, 1, 5, 4], center: new THREE.Vector3(0, -0.5, 0) },
+            { name: "Frente", normal: new THREE.Vector3(0, 0, 1), verts: [0, 1, 2, 3], center: new THREE.Vector3(0, 0, 0.5) },
+            { name: "Atrás", normal: new THREE.Vector3(0, 0, -1), verts: [4, 5, 6, 7], center: new THREE.Vector3(0, 0, -0.5) }
+        ];
+
+        // --- CARGA DEL MODELO GLB ---
+        const loader = new GLTFLoader();
+        
+        currentCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x3a86ff }));
+        scene.add(currentCube);
+
+        loader.load('cubo.glb', (gltf) => {
+            // Extraemos las mallas en un array seguro para no corromper la escena
+            const loadedMeshes = [];
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) loadedMeshes.push(child);
+            });
+
+            loadedMeshes.forEach((child) => {
+                if (child.name === 'Cubo.002' || child.name.includes('Cubo.002')) {
+                    
+                    scene.remove(currentCube); 
+                    currentCube = child;
+                    
+                    // --- REPARACIÓN GEOMÉTRICA DE BLENDER ---
+                    currentCube.geometry.computeBoundingBox();
+                    const box = currentCube.geometry.boundingBox;
+                    const size = new THREE.Vector3(); box.getSize(size);
+                    const center = new THREE.Vector3(); box.getCenter(center);
+
+                    currentCube.geometry.translate(-center.x, -center.y, -center.z);
+                    currentCube.geometry.scale(1/size.x, 1/size.y, 1/size.z);
+                    
+                    // ESTO REPARA EL ERROR DEL BOTÓN: Recalcula las normales después de estirar la geometría
+                    currentCube.geometry.computeVertexNormals();
+                    
+                    // Posicionamos el cubo exactamente encima de la plataforma (Y=0.5)
+                    currentCube.position.set(0, 0.5, 0);
+                    currentCube.rotation.set(0, 0, 0);
+                    currentCube.scale.set(1, 1, 1);
+                    currentCube.updateMatrix();
+
+                    currentCube.material = new THREE.MeshStandardMaterial({ color: 0x3a86ff, roughness: 0.3 });
+                    scene.add(currentCube);
+
+                } else if (child.name === 'Plano_subdividido' || child.name.includes('Plano')) {
+                    // Plataforma
+                    child.material = new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.8 });
+                    scene.add(child);
+                }
+            });
+            
+            // Reiniciamos los estados por si el usuario hizo clics mientras cargaba
+            extrudedParts.clear();
+            extrusionOrder = [];
+            updateExtrudeUI();
+        });
+
+        function scaleFigure(delta) {
+            let newScale = currentScale + delta;
+            if (newScale >= scaleLimits.min && newScale <= scaleLimits.max) {
+                currentScale = newScale;
+                currentCube.scale.set(currentScale, currentScale, currentScale);
+                document.getElementById('scaleVal').innerText = currentScale.toFixed(2);
+            } else {
+                document.getElementById('limitWarning').style.display = 'block';
+                setTimeout(() => document.getElementById('limitWarning').style.display = 'none', 1000);
+            }
+        }
+
+        function clearHighlight() {
+            if (highlightGroup && currentCube) { currentCube.remove(highlightGroup); highlightGroup = null; }
+        }
+
+        function highlightFace(faceData) {
+            clearHighlight();
+            const group = new THREE.Group();
+            const points = [...faceData.vertices, faceData.vertices[0]];
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const border = new THREE.LineLoop(lineGeo, new THREE.LineBasicMaterial({ color: 0xffaa44 }));
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
+            plane.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), faceData.normal);
+            plane.position.copy(faceData.center.clone().add(faceData.normal.clone().multiplyScalar(0.01)));
+            group.add(border, plane);
+            currentCube.add(group);
+            highlightGroup = group;
+        }
+
+        function updateExtrudeUI() {
+            document.getElementById('extrudedCount').innerText = `${extrudedParts.size}/6`;
+            document.getElementById('undoExtrudeBtn').disabled = extrusionOrder.length === 0;
+            
+            if (!selectedFaceLocal) {
+                document.getElementById("extrudeBtn").disabled = true;
+                document.getElementById("clearFaceBtn").disabled = true;
+            } else {
+                const isExtruded = extrudedParts.has(selectedFaceLocal.name);
+                document.getElementById("extrudeBtn").disabled = isExtruded;
+                document.getElementById("clearFaceBtn").disabled = !isExtruded;
+            }
+        }
+
+        const keyState = {};
+        window.addEventListener('keydown', (e) => keyState[e.code] = true);
+        window.addEventListener('keyup', (e) => keyState[e.code] = false);
+
+        function handleTransform() {
+            if (!currentCube) return;
+            let changed = false;
+            const mS = 0.08, rS = 0.03;
+
+            if (keyState.KeyW) { currentCube.position.z -= mS; changed = true; }
+            if (keyState.KeyS) { currentCube.position.z += mS; changed = true; }
+            if (keyState.KeyA) { currentCube.position.x -= mS; changed = true; }
+            if (keyState.KeyD) { currentCube.position.x += mS; changed = true; }
+            if (keyState.KeyQ) { currentCube.position.y += mS; changed = true; }
+            if (keyState.KeyE) { currentCube.position.y -= mS; changed = true; }
+
+            if (keyState.KeyR) { currentCube.rotateY(rS); changed = true; }
+            if (keyState.KeyT) { currentCube.rotateY(-rS); changed = true; }
+            if (keyState.KeyF) { currentCube.rotateX(rS); changed = true; }
+            if (keyState.KeyG) { currentCube.rotateX(-rS); changed = true; }
+            if (keyState.KeyV) { currentCube.rotateZ(rS); changed = true; }
+            if (keyState.KeyB) { currentCube.rotateZ(-rS); changed = true; }
+
+            if (keyState.KeyZ) { scaleFigure(0.02); changed = true; }
+            if (keyState.KeyX) { scaleFigure(-0.02); changed = true; }
+
+            if (changed && selectedFaceLocal) {
+                clearHighlight();
+                selectedFaceLocal = null;
+                document.getElementById("selectedFace").innerText = "Ninguna";
+                updateExtrudeUI();
+            }
+        }
+
+        // --- SISTEMA DE CLICS A PRUEBA DE FALLOS ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        // Usamos pointerdown para que funcione excelente tanto en ratón como en pantallas táctiles
+        window.addEventListener('pointerdown', (e) => {
+            // Si hacemos clic en los botones de la interfaz, ignoramos el rayo 3D
+            if (e.target.tagName === 'BUTTON' || !currentCube) return;
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObject(currentCube, false);
+            
+            if (intersects.length > 0) {
+                const hitNormal = intersects[0].face.normal;
+                const face = faceQuads.find(f => hitNormal.dot(f.normal) > 0.8);
+                
+                if (face) {
+                    selectedFaceLocal = { ...face, vertices: face.verts.map(i => cubeVertices[i].clone()) };
+                    document.getElementById("selectedFace").innerText = face.name;
+                    highlightFace(selectedFaceLocal);
+                    updateExtrudeUI();
+                }
+            }
+        });
+
+        // --- ACCIONES DE BOTONES (Sin Alertas) ---
+        
+        document.getElementById("extrudeBtn").onclick = () => {
+            if (!selectedFaceLocal || extrudedParts.has(selectedFaceLocal.name)) return;
+            
+            const depth = 0.6;
+            const prism = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1, depth), 
+                new THREE.MeshStandardMaterial({ color: 0x00f5d4, roughness: 0.3 }) // Color Turquesa brillante
+            );
+            
+            prism.position.copy(selectedFaceLocal.center.clone().add(selectedFaceLocal.normal.clone().multiplyScalar(depth / 2)));
+            prism.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), selectedFaceLocal.normal);
+            
+            currentCube.add(prism);
+            extrudedParts.set(selectedFaceLocal.name, prism);
+            extrusionOrder.push(selectedFaceLocal.name);
+            
+            updateExtrudeUI();
+        };
+
+        document.getElementById("clearFaceBtn").onclick = () => {
+            if (selectedFaceLocal && extrudedParts.has(selectedFaceLocal.name)) {
+                const prism = extrudedParts.get(selectedFaceLocal.name);
+                currentCube.remove(prism);
+                extrudedParts.delete(selectedFaceLocal.name);
+                extrusionOrder = extrusionOrder.filter(name => name !== selectedFaceLocal.name);
+                
+                updateExtrudeUI();
+            }
+        };
+        
+        document.getElementById("undoExtrudeBtn").onclick = () => {
+            const name = extrusionOrder.pop();
+            if (name) { 
+                currentCube.remove(extrudedParts.get(name)); 
+                extrudedParts.delete(name); 
+            }
+            updateExtrudeUI();
+        };
+
+        document.getElementById("resetBtn").onclick = () => {
+            location.reload(); 
+        };
+
+        document.getElementById("scaleUpBtn").onclick = () => scaleFigure(0.1);
+        document.getElementById("scaleDownBtn").onclick = () => scaleFigure(-0.1);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            handleTransform();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+    </script>
+</body>
+</html>
