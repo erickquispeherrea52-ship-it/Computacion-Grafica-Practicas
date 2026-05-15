@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ejercicio - Editor 3D Pro</title>
+    <style>
+        /* ESTILOS GLOBALES
+        Quitamos márgenes del body y ponemos fondo oscuro para que el canvas
+        3D ocupe toda la pantalla sin espacios en blanco. */
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #0a0a12; }
+        /* PANEL DE INSTRUCCIONES (esquina superior izquierda)
+        Es una caja flotante con posición absoluta. pointer-events:none hace
+        que los clics la atraviesen y lleguen al canvas 3D.*/
+        #sidebar {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(20,20,30,0.9);
+            color: white; padding: 15px 20px; border-radius: 12px;
+            backdrop-filter: blur(10px); z-index: 10; font-size: 13px;
+            pointer-events: none; border: 1px solid #444;
+            display: flex; flex-direction: column; gap: 8px; min-width: 200px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .sidebar-title {
+            font-weight: bold; font-size: 15px; color: #ff9800;
+            border-bottom: 1px solid #444; padding-bottom: 8px; margin-bottom: 4px;
+        }
+        .sidebar-desc { font-size: 11px; color: #aaa; margin-bottom: 8px; line-height: 1.4; }
+        .key-group {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;
+        }
+        .key-group:last-child { border-bottom: none; padding-bottom: 0; }
+        .key-label { color: #ccc; font-size: 12px; }
+        .key-val {
+            background: #2a2a35; padding: 3px 8px; border-radius: 6px;
+            font-family: monospace; color: #00f5d4; font-size: 11px; border: 1px solid #555;
+        }
+        /* BARRA DE CONTROLES (parte inferior centrada)
+        transform:translateX(-50%) junto con left:50% centra el panel
+        horizontalmente sin importar su ancho. */
+        #controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(30,30,40,0.95); backdrop-filter: blur(10px); padding: 15px;
+            border-radius: 12px; display: flex; justify-content: center; gap: 10px;
+            flex-wrap: wrap; z-index: 20; pointer-events: auto; border: 1px solid #444;
+            width: max-content;
+        }
+        /* Estilos base para todos los botones */
+        button {
+            background: #ff9800; border: none; color: #1e1e2a; padding: 8px 18px;
+            border-radius: 40px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        button:hover:not(:disabled) { background: #ffb74d; transform: scale(1.05); }
+        /* Colores específicos por tipo de botón */
+        button.reset   { background: #555; color: white; }
+        button.extrude { background: #4caf50; color: white; }
+        button.delete  { background: #d32f2f; color: white; }
+        button.scale   { background: #2196f3; color: white; }
+        /* Botón deshabilitado: gris y sin cursor de mano */
+        button:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
+        /* Fila de indicadores de estado (cara seleccionada, tamaño, extrusiones) */
+        .status-bar { width: 100%; display: flex; justify-content: center; gap: 15px; margin-bottom: 8px; }
+        .status {
+            background: #1e1e2a; padding: 6px 14px; border-radius: 40px;
+            font-family: monospace; color: #ff9800; font-size: 13px; border: 1px solid #333;
+        }
+        .status span { color: white; }
+        /* Aviso emergente de límite de escala (aparece 1 segundo) */
+        .limit-warning {
+            background: #aa3300; color: #ffcc88; padding: 4px 10px; border-radius: 20px;
+            font-size: 12px; display: none; position: absolute; top: 20px; right: 20px; z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel lateral con las teclas de control -->
+    <div id="sidebar">
+        <div class="sidebar-title">🧊 Editor 3D Pro</div>
+        <div class="sidebar-desc">
+            1. Selecciona una cara azul.<br>
+            2. Usa los botones para extruir o limpiar.
+        </div>
+        <div class="key-group"><span class="key-label">🚀 Mover (X, Z)</span> <span class="key-val">W A S D</span></div>
+        <div class="key-group"><span class="key-label">🚀 Subir/Bajar</span>  <span class="key-val">Q / E</span></div>
+        <div class="key-group"><span class="key-label">🔄 Rotar X</span>       <span class="key-val">F / G</span></div>
+        <div class="key-group"><span class="key-label">🔄 Rotar Y</span>       <span class="key-val">R / T</span></div>
+        <div class="key-group"><span class="key-label">🔄 Rotar Z</span>       <span class="key-val">V / B</span></div>
+        <div class="key-group"><span class="key-label">📐 Escalar</span>       <span class="key-val">Z / X</span></div>
+    </div>
+    <!-- Aviso flotante cuando se alcanza el límite de escala -->
+    <div id="limitWarning" class="limit-warning">⚠️ Límite alcanzado</div>
+    <!-- Panel inferior con botones y estados -->
+    <div id="controls">
+        <div class="status-bar">
+            <div class="status">📌 Cara: <span id="selectedFace">Ninguna</span></div>
+            <div class="status">📐 Tamaño: <span id="scaleVal">1.00</span></div>
+            <div class="status">💎 Extruidas: <span id="extrudedCount">0</span>/6</div>
+        </div>
+        <button id="extrudeBtn"     class="extrude" disabled>✨ Extruir</button>
+        <button id="clearFaceBtn"   class="delete"  disabled>🗑️ Limpiar Cara</button>
+        <button id="undoExtrudeBtn" class="delete"  disabled>↩️ Deshacer</button>
+        <button id="scaleDownBtn"   class="scale">🔽 - Escalar</button>
+        <button id="scaleUpBtn"     class="scale">🔼 + Escalar</button>
+        <button id="resetBtn"       class="reset">🔄 Reiniciar</button>
+    </div>
+
+    <!-- Import Map: le dice al navegador dónde descargar Three.js y sus módulos
+        adicionales (OrbitControls, GLTFLoader) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        // IMPORTACIONES
+        // Three.js es el motor 3D. OrbitControls permite rotar la cámara con
+        // el mouse. GLTFLoader carga archivos .glb exportados desde Blender.
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader }    from 'three/addons/loaders/GLTFLoader.js';
+        // ESCENA: el "universo" donde viven todos los objetos 3D.
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a12); // fondo azul muy oscuro
+        // CÁMARA: perspectiva de 45° de campo visual.
+        // aspect = ancho/alto de pantalla para que no se deforme la imagen.
+        // near/far = rango de visibilidad (objetos entre 0.1 y 1000 unidades).
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(3, 2.5, 4); // posición inicial: cerca y elevada para ver el cubo bien
+        // RENDERIZADOR: convierte la escena 3D en píxeles en pantalla.
+        // antialias = suaviza los bordes dentados.
+        // shadowMap = habilita el motor de sombras.
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement); // pega el canvas al HTML
+        // CONTROLES DE ÓRBITA: permiten rotar y hacer zoom con el mouse.
+        // enableDamping = inercia suave al soltar el mouse.
+        // target = punto al que mira la cámara (centro del cubo en Y=0.5).
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0.5, 0); // la cámara apunta al centro del cubo desde el inicio
+        controls.update();
+        // ILUMINACIÓN
+        // AmbientLight: luz suave en toda la escena (evita zonas totalmente negras).
+        // DirectionalLight: simula el sol, crea brillos y sombras direccionales.
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(2, 5, 3);
+        scene.add(dirLight);
+        // VARIABLES GLOBALES DE ESTADO
+        let currentCube       = null;      // referencia al objeto 3D del cubo interactivo
+        let extrudedParts     = new Map(); // diccionario: nombre de cara → pieza extruida
+        let extrusionOrder    = [];        // historial de extrusiones para poder deshacer
+        let selectedFaceLocal = null;      // datos de la cara actualmente seleccionada
+        let highlightGroup    = null;      // grupo Three.js con el recuadro naranja de selección
+        let currentScale      = 1.0;       // escala actual del cubo (1.0 = tamaño original)
+
+        // Límites de escala: el cubo no puede ser más pequeño de 0.3 ni más grande de 2.0
+        const scaleLimits = { min: 0.3, max: 2.0 };
+
+        // ─────────────────────────────────────────────────────────────────────
+        // COLOR DEL CUBO Y LAS EXTRUSIONES
+        // Al definir el color en una sola constante, garantizamos que el cubo
+        const CUBE_COLOR = 0x3a86ff; // azul vibrante — único color para cubo y extrusiones
+        // PROFUNDIDAD DE EXTRUSIÓN
+        // Cuánto sobresale cada pieza extruida del cubo.
+        const EXTRUDE_DEPTH = 1.2; // unidades Three.js
+        // VÉRTICES DEL CUBO UNITARIO
+        // Un cubo de 1x1x1 tiene 8 esquinas. Estas coordenadas definen cada
+        // vértice en espacio local (con el centro del cubo en el origen 0,0,0).
+        const cubeVertices = [
+            new THREE.Vector3(-0.5, -0.5,  0.5), // 0: frente-izquierda-abajo
+            new THREE.Vector3( 0.5, -0.5,  0.5), // 1: frente-derecha-abajo
+            new THREE.Vector3( 0.5,  0.5,  0.5), // 2: frente-derecha-arriba
+            new THREE.Vector3(-0.5,  0.5,  0.5), // 3: frente-izquierda-arriba
+            new THREE.Vector3(-0.5, -0.5, -0.5), // 4: atrás-izquierda-abajo
+            new THREE.Vector3( 0.5, -0.5, -0.5), // 5: atrás-derecha-abajo
+            new THREE.Vector3( 0.5,  0.5, -0.5), // 6: atrás-derecha-arriba
+            new THREE.Vector3(-0.5,  0.5, -0.5)  // 7: atrás-izquierda-arriba
+        ];
+        // DEFINICIÓN DE LAS 6 CARAS DEL CUBO
+        // Cada cara tiene:
+        //   name   → nombre legible para la UI
+        //   normal → vector perpendicular a la cara (apunta hacia afuera)
+        //   verts  → índices de los 4 vértices que forman esa cara
+        //   center → punto central de la cara en espacio local
+        const faceQuads = [
+            { name: "Derecha",   normal: new THREE.Vector3( 1, 0, 0), verts: [1,5,6,2], center: new THREE.Vector3( 0.5, 0, 0) },
+            { name: "Izquierda", normal: new THREE.Vector3(-1, 0, 0), verts: [4,0,3,7], center: new THREE.Vector3(-0.5, 0, 0) },
+            { name: "Arriba",    normal: new THREE.Vector3( 0, 1, 0), verts: [3,2,6,7], center: new THREE.Vector3(0,  0.5, 0) },
+            { name: "Abajo",     normal: new THREE.Vector3( 0,-1, 0), verts: [0,1,5,4], center: new THREE.Vector3(0, -0.5, 0) },
+            { name: "Frente",    normal: new THREE.Vector3( 0, 0, 1), verts: [0,1,2,3], center: new THREE.Vector3(0, 0,  0.5) },
+            { name: "Atrás",     normal: new THREE.Vector3( 0, 0,-1), verts: [4,5,6,7], center: new THREE.Vector3(0, 0, -0.5) }
+        ];
+        // CARGA DEL ARCHIVO BLENDER (.glb)
+        // GLTFLoader descarga el archivo y nos entrega la escena de Blender.
+        // Mientras carga, mostramos un cubo azul temporal de placeholder.
+        const loader = new GLTFLoader();
+        // Cubo temporal de espera (se reemplaza cuando termina la carga del .glb)
+        currentCube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshStandardMaterial({ color: CUBE_COLOR })
+        );
+        currentCube.position.set(0, 0.5, 0);
+        scene.add(currentCube);
+        loader.load('cubo.glb', (gltf) => {
+            // Recorremos toda la escena del archivo .glb buscando objetos visibles (Mesh)
+            const loadedMeshes = [];
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) loadedMeshes.push(child);
+            });
+            loadedMeshes.forEach((child) => {
+                // ── CUBO INTERACTIVO ───
+                // El cubo en Blender se llama 'Cube'. Ignoramos 'Cube.001'
+                // porque es un hijo/duplicado que no necesitamos manipular.
+                if (child.name === 'Cube') {
+                    scene.remove(currentCube); // quitamos el cubo temporal de espera
+                    currentCube = child;       // asignamos el cubo real de Blender
+                    // Calculamos el bounding box para conocer las dimensiones reales del modelo
+                    currentCube.geometry.computeBoundingBox();
+                    const box    = currentCube.geometry.boundingBox;
+                    const size   = new THREE.Vector3(); box.getSize(size);
+                    const center = new THREE.Vector3(); box.getCenter(center);
+                    // Centramos el pivote (origin) del modelo en su centro geométrico
+                    currentCube.geometry.translate(-center.x, -center.y, -center.z);
+                    // Normalizamos a 1x1x1 para que la lógica de caras y colisiones sea predecible
+                    currentCube.geometry.scale(1/size.x, 1/size.y, 1/size.z);
+                    // Recalculamos normales para que la iluminación sea correcta tras escalar
+                    currentCube.geometry.computeVertexNormals();
+                    // Y=0.5 coloca la base del cubo exactamente en el suelo (Y=0)
+                    currentCube.position.set(0, 0.5, 0);
+                    currentCube.rotation.set(0, 0, 0);
+                    currentCube.scale.set(1, 1, 1);
+                    currentCube.updateMatrix();
+                    // Aplicamos el material usando CUBE_COLOR para consistencia de color
+                    currentCube.material = new THREE.MeshStandardMaterial({ color: CUBE_COLOR, roughness: 0.3 });
+                    scene.add(currentCube);
+                // ── TARIMA / PLANO ────────────────────────────────────────────
+                // El plano viene de Blender. Solo le asignamos material y lo
+                // anclamos en Y=0 para que funcione como suelo real.
+                } else if (child.name === 'Plano subdividido' || child.name === 'Plano subdividido.001' || child.name.includes('Plano')) {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0x444455,
+                        roughness: 0.8,
+                        side: THREE.DoubleSide // visible desde arriba y desde abajo
+                    });
+                    child.position.y = 0; // ancla la tarima exactamente en Y=0 (el suelo real)
+                    scene.add(child);
+                }
+            });
+            // Reiniciamos el estado del editor para empezar limpio
+            extrudedParts.clear();
+            extrusionOrder = [];
+            updateExtrudeUI();
+        });
+        // FUNCIÓN: scaleFigure(delta)
+        // Modifica el tamaño del cubo sumando 'delta' a la escala actual.
+        // Si el resultado está fuera del rango permitido, muestra aviso y no cambia.
+        function scaleFigure(delta) {
+            const newScale = currentScale + delta;
+            if (newScale >= scaleLimits.min && newScale <= scaleLimits.max) {
+                currentScale = newScale;
+                currentCube.scale.set(currentScale, currentScale, currentScale);
+                document.getElementById('scaleVal').innerText = currentScale.toFixed(2);
+            } else {
+                // Muestra el aviso visual y lo oculta automáticamente tras 1 segundo
+                document.getElementById('limitWarning').style.display = 'block';
+                setTimeout(() => document.getElementById('limitWarning').style.display = 'none', 1000);
+            }
+        }
+        // FUNCIÓN: clearHighlight()
+        // Elimina el recuadro naranja de la cara seleccionada.
+        // El highlight es un hijo del cubo, así que lo removemos del cubo.
+        function clearHighlight() {
+            if (highlightGroup && currentCube) {
+                currentCube.remove(highlightGroup);
+                highlightGroup = null;
+            }
+        }
+        // FUNCIÓN: highlightFace(faceData)
+        // Dibuja un borde naranja + plano semitransparente sobre la cara dada.
+        // Todo se agrupa como hijo del cubo para que se mueva junto con él.
+        function highlightFace(faceData) {
+            clearHighlight(); // borramos resaltado anterior si existía
+            const group = new THREE.Group();
+            // Borde naranja: conecta los 4 vértices y cierra el cuadrado
+            const points = [...faceData.vertices, faceData.vertices[0]];
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const border = new THREE.LineLoop(lineGeo, new THREE.LineBasicMaterial({ color: 0xffaa44 }));
+            // Plano semitransparente para indicar visualmente la selección
+            const plane = new THREE.Mesh(
+                new THREE.PlaneGeometry(1, 1),
+                new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.4, side: THREE.DoubleSide })
+            );
+            // Rotamos el plano para que quede paralelo a la cara seleccionada
+            plane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), faceData.normal);
+            // Lo empujamos 0.01 hacia afuera para evitar z-fighting (parpadeo visual)
+            plane.position.copy(faceData.center.clone().add(faceData.normal.clone().multiplyScalar(0.01)));
+            group.add(border, plane);
+            currentCube.add(group); // lo pegamos al cubo como hijo
+            highlightGroup = group;
+        }
+        // FUNCIÓN: isBottomFaceNearFloor()
+        // Devuelve true si la cara INFERIOR del cubo está demasiado cerca del
+        // suelo (Y=0) como para poder extruirse sin quedar enterrada.
+        //
+        // Cálculo: la base del cubo está en posiciónY - (mitad de su altura escalada).
+        // Si esa base está a menos de 0.15 unidades de Y=0 → bloqueamos la extrusión.
+        function isBottomFaceNearFloor() {
+            const baseY = currentCube.position.y - (0.5 * currentScale);
+            return baseY < 0.15; // umbral: menos de 0.15 unidades del suelo = bloqueado
+        }
+        // FUNCIÓN: updateExtrudeUI()
+        // Sincroniza la interfaz HTML con el estado actual del editor:
+        //   - Actualiza el contador de caras extruidas
+        //   - Habilita o bloquea los botones según la selección activa
+        //   - Bloquea la cara inferior si está al ras del suelo
+        function updateExtrudeUI() {
+            // Contador "X/6" de caras extruidas
+            document.getElementById('extrudedCount').innerText = `${extrudedParts.size}/6`;
+            // Deshacer solo disponible si hay algo en el historial
+            document.getElementById('undoExtrudeBtn').disabled = extrusionOrder.length === 0;
+            if (!selectedFaceLocal) {
+                // Sin selección: botones de acción bloqueados
+                document.getElementById("extrudeBtn").disabled   = true;
+                document.getElementById("clearFaceBtn").disabled = true;
+            } else {
+                const isExtruded = extrudedParts.has(selectedFaceLocal.name);
+                // ── BLOQUEO DE CARA INFERIOR CERCA DEL SUELO ─────────────────
+                // Si la cara seleccionada es "Abajo" Y el cubo está casi pegado
+                // a la tarima, bloqueamos Extruir para esa cara.
+                // Así la extrusión no queda enterrada debajo del plano.
+                const isBlockedByFloor = (selectedFaceLocal.name === "Abajo") && isBottomFaceNearFloor();
+                document.getElementById("extrudeBtn").disabled   = isExtruded || isBlockedByFloor;
+                document.getElementById("clearFaceBtn").disabled = !isExtruded;
+                // Indicamos visualmente en la UI que la cara está bloqueada por el suelo
+                if (isBlockedByFloor && !isExtruded) {
+                    document.getElementById("selectedFace").innerText = "Abajo ⛔ (al ras del suelo)";
+                }
+            }
+        }
+        // TECLADO: registramos en tiempo real qué teclas están presionadas.
+        // keydown → activa la tecla (true)
+        // keyup   → desactiva la tecla (false)
+        const keyState = {};
+        window.addEventListener('keydown', (e) => keyState[e.code] = true);
+        window.addEventListener('keyup',   (e) => keyState[e.code] = false);
+        // FUNCIÓN: handleTransform()
+        // Se ejecuta en cada fotograma. Lee el keyState y aplica movimiento,
+        // rotación o escala al cubo según las teclas presionadas.
+        function handleTransform() {
+            if (!currentCube) return;
+            let changedPos = false; // ¿se movió el cubo este fotograma?
+            let changedRot = false; // ¿rotó o escaló este fotograma?
+            const mS = 0.08; // velocidad de movimiento (unidades por fotograma)
+            const rS = 0.03; // velocidad de rotación (radianes por fotograma)
+            // ── MOVIMIENTO ────────────────────────────────────────────────────
+            if (keyState.KeyW) { currentCube.position.z -= mS; changedPos = true; } // adelante
+            if (keyState.KeyS) { currentCube.position.z += mS; changedPos = true; } // atrás
+            if (keyState.KeyA) { currentCube.position.x -= mS; changedPos = true; } // izquierda
+            if (keyState.KeyD) { currentCube.position.x += mS; changedPos = true; } // derecha
+            if (keyState.KeyQ) { currentCube.position.y += mS; changedPos = true; } // subir
+            if (keyState.KeyE) { currentCube.position.y -= mS; changedPos = true; } // bajar
+            if (changedPos) {
+                // Limitamos X y Z para que el cubo no se salga de la escena
+                currentCube.position.x = THREE.MathUtils.clamp(currentCube.position.x, -8, 8);
+                currentCube.position.z = THREE.MathUtils.clamp(currentCube.position.z, -8, 8);
+                // Límite inferior de Y: la base del cubo no puede cruzar el suelo (Y=0).
+                // Multiplicamos por currentScale porque si el cubo está escalado al doble,
+                // su mitad inferior también mide el doble y necesita más espacio.
+                currentCube.position.y = THREE.MathUtils.clamp(
+                    currentCube.position.y,
+                    0.5 * currentScale, // mínimo = mitad del cubo escalado
+                    8
+                );
+            }
+            // ── ROTACIÓN ──────────────────────────────────────────────────────
+            if (keyState.KeyR) { currentCube.rotateY( rS); changedRot = true; } // rotar Y+
+            if (keyState.KeyT) { currentCube.rotateY(-rS); changedRot = true; } // rotar Y-
+            if (keyState.KeyF) { currentCube.rotateX( rS); changedRot = true; } // rotar X+
+            if (keyState.KeyG) { currentCube.rotateX(-rS); changedRot = true; } // rotar X-
+            if (keyState.KeyV) { currentCube.rotateZ( rS); changedRot = true; } // rotar Z+
+            if (keyState.KeyB) { currentCube.rotateZ(-rS); changedRot = true; } // rotar Z-
+            // ── ESCALA POR TECLADO ────────────────────────────────────────────
+            if (keyState.KeyZ) { scaleFigure( 0.02); changedRot = true; } // crecer
+            if (keyState.KeyX) { scaleFigure(-0.02); changedRot = true; } // encoger
+            // Si el cubo se transformó, cancelamos la selección de cara activa
+            // porque la posición/orientación cambió y la selección ya no es válida
+            if ((changedPos || changedRot) && selectedFaceLocal) {
+                clearHighlight();
+                selectedFaceLocal = null;
+                document.getElementById("selectedFace").innerText = "Ninguna";
+                updateExtrudeUI();
+            }
+        }
+        // RAYCASTER: detecta qué cara del cubo fue tocada con el mouse.
+        // Lanza un rayo invisible desde la cámara a través del punto del clic
+        // y verifica con qué cara del cubo colisiona.
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        window.addEventListener('pointerdown', (e) => {
+            // Ignoramos clics sobre botones HTML o si el cubo no ha cargado
+            if (e.target.tagName === 'BUTTON' || !currentCube) return;
+            // Convertimos coordenadas de pantalla (px) a espacio normalizado (-1 a 1)
+            mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            // Apuntamos el rayo desde la cámara hacia donde hizo clic el mouse
+            raycaster.setFromCamera(mouse, camera);
+            // false = no chequeamos los hijos del cubo (como el highlight o extrusiones)
+            const intersects = raycaster.intersectObject(currentCube, false);
+            if (intersects.length > 0) {
+                // La normal de la cara impactada nos dice en qué dirección apunta esa cara
+                const hitNormal = intersects[0].face.normal;
+                // Buscamos qué cara matemática coincide con la normal tocada.
+                // dot product > 0.8 significa que los dos vectores apuntan casi igual (< 37° de diferencia)
+                const face = faceQuads.find(f => hitNormal.dot(f.normal) > 0.8);
+                if (face) {
+                    selectedFaceLocal = { ...face, vertices: face.verts.map(i => cubeVertices[i].clone()) };
+                    document.getElementById("selectedFace").innerText = face.name;
+                    highlightFace(selectedFaceLocal); // dibujamos el recuadro naranja
+                    updateExtrudeUI();                // actualizamos los botones
+                }
+            }
+        });
+        // BOTÓN: Extruir
+        // Crea una pieza BoxGeometry que sobresale de la cara seleccionada.
+        // La dirección de salida es la normal de la cara.
+        // El color es el mismo que el cubo (CUBE_COLOR) para unidad visual.
+        document.getElementById("extrudeBtn").onclick = () => {
+            // Abortamos si no hay cara seleccionada o ya fue extruida
+            if (!selectedFaceLocal || extrudedParts.has(selectedFaceLocal.name)) return;
+
+            // Creamos la pieza con la profundidad definida en EXTRUDE_DEPTH (1.2 unidades)
+            const prism = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1, EXTRUDE_DEPTH),
+                // Mismo color que el cubo para que la extrusión sea visualmente continua
+                new THREE.MeshStandardMaterial({ color: CUBE_COLOR, roughness: 0.3 })
+            );
+
+            // Posición: partimos del centro de la cara y empujamos hacia afuera (depth/2)
+            // para que la base de la pieza quede pegada a la cara del cubo
+            prism.position.copy(
+                selectedFaceLocal.center.clone().add(
+                    selectedFaceLocal.normal.clone().multiplyScalar(EXTRUDE_DEPTH / 2)
+                )
+            );
+            // Rotamos la pieza para que su eje Z apunte en la misma dirección que la normal
+            prism.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), selectedFaceLocal.normal);
+
+            currentCube.add(prism);                             // la hacemos hija del cubo
+            extrudedParts.set(selectedFaceLocal.name, prism);  // guardamos en el diccionario
+            extrusionOrder.push(selectedFaceLocal.name);        // registramos en el historial
+
+            updateExtrudeUI();
+        };
+        // BOTÓN: Limpiar Cara
+        // Elimina la extrusión de la cara actualmente seleccionada.
+        document.getElementById("clearFaceBtn").onclick = () => {
+            if (selectedFaceLocal && extrudedParts.has(selectedFaceLocal.name)) {
+                const prism = extrudedParts.get(selectedFaceLocal.name);
+                currentCube.remove(prism);                                              // quitamos la pieza
+                extrudedParts.delete(selectedFaceLocal.name);                           // limpiamos el diccionario
+                extrusionOrder = extrusionOrder.filter(n => n !== selectedFaceLocal.name); // limpiamos el historial
+                updateExtrudeUI();
+            }
+        };
+        // BOTÓN: Deshacer
+        // Revierte la última extrusión realizada usando el historial (pila LIFO).
+        document.getElementById("undoExtrudeBtn").onclick = () => {
+            const name = extrusionOrder.pop(); // saca el último elemento del historial
+            if (name) {
+                currentCube.remove(extrudedParts.get(name)); // elimina la pieza de la escena
+                extrudedParts.delete(name);                   // limpia el diccionario
+            }
+            updateExtrudeUI();
+        };
+        // BOTÓN: Reiniciar
+        // Recarga la página completa para volver al estado inicial limpio.
+        document.getElementById("resetBtn").onclick = () => { location.reload(); };
+        // BOTONES: Escalar + y -
+        // Aumentan o disminuyen el tamaño del cubo en pasos de 0.1.
+        document.getElementById("scaleUpBtn").onclick   = () => scaleFigure( 0.1);
+        document.getElementById("scaleDownBtn").onclick = () => scaleFigure(-0.1);
+
+        // BUCLE DE ANIMACIÓN (60 FPS)
+        // requestAnimationFrame sincroniza el render con la tasa de refresco
+        // de la pantalla. En cada frame: procesamos teclas, actualizamos la
+        // cámara orbital y renderizamos la escena.
+        function animate() {
+            requestAnimationFrame(animate);  // solicita el siguiente fotograma
+            handleTransform();               // aplica movimiento/rotación/escala por teclado
+            controls.update();              // actualiza la inercia de la cámara orbital
+            renderer.render(scene, camera); // dibuja la escena en el canvas
+        }
+        animate(); // arrancamos el bucle por primera vez
+        // EVENTO: Redimensionar ventana
+        // Si el usuario cambia el tamaño del navegador, actualizamos el aspect
+        // ratio de la cámara y el tamaño del canvas para que la imagen no se
+        // deforme ni se vea borrosa o recortada.
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix(); // aplica el nuevo aspect ratio a la perspectiva
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+    </script>
+</body>
+</html>
