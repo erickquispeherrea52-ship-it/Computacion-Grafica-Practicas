@@ -250,6 +250,46 @@ body {
   border: 2px solid #00ffff;
   box-shadow: 0 0 20px #00ffff, inset 0 0 15px rgba(0, 255, 255, 0.5);
 }
+/* CONTENEDOR CENTRADO */
+.ppt-container{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* TARJETA PPT */
+.ppt-wrapper{
+  width: 85%;
+  max-width: 1000px;
+  background: #1e1e1e;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transition: 0.3s ease;
+}
+
+.ppt-wrapper:hover{
+  transform: translateY(-5px);
+}
+
+/* TITULO */
+.title-ppt{
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+/* IFRAME */
+.ppt-wrapper iframe{
+  width: 100%;
+  height: 500px;
+  border: none;
+  border-radius: 15px;
+}
 
 </style>
 </head>
@@ -276,21 +316,77 @@ body {
   
 </div>
 
-
-<h2 class="seccion-titulo" style="font-size: 20px; opacity: 0.7;">Reporte de Actividades (CLASSROOM)</h2>
+<h2 class="seccion-titulo" style="font-size: 20px; opacity: 0.7;">
+  Reporte de Actividades (CLASSROOM)
+</h2>
 
 <div class="grid">
-  <a href="Tarea1.html" class="folder"><div class="icon">📋</div><div class="title">Actividad 1</div></a>
-  <a href="Tarea2.html" class="folder"><div class="icon">📋</div><div class="title">Actividad 2</div></a>
-  <a href="Tarea3.html" class="folder"><div class="icon">📋</div><div class="title">Actividad 3</div></a>
-  <a href="Tarea4.html" class="folder"><div class="icon">📋</div><div class="title">Actividad 4</div></a>
-  <a href="Trabajo investigar.pdf" class="folder"><div class="icon">📋</div><div class="title">CURVAS PARAMETRICAS y MALLAS POLICONALES</div></a>
-  <a href="cubo3d.html" class="folder"><div class="icon">📋</div><div class="title">EJERCICIO PRACTICO GRUPAL</div></a>
-  <a href="Trabajo investigar.pdf" class="folder"><div class="icon">📋</div><div class="title">Por definir</div></a>
-  <a href="line" class="folder"><div class="icon">📋</div><div class="title">Por definir</div></a>
-  <a href="line" class="folder"><div class="icon">📋</div><div class="title">Por definir</div></a>
+
+  <a href="Tarea1.html" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Actividad 1</div>
+  </a>
+
+  <a href="Tarea2.html" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Actividad 2</div>
+  </a>
+
+  <a href="Tarea3.html" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Actividad 3</div>
+  </a>
+
+  <a href="Tarea4.html" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Actividad 4</div>
+  </a>
+
+  <a href="Trabajo investigar.pdf" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">CURVAS PARAMETRICAS y MALLAS POLICONALES</div>
+  </a>
+
+  <a href="cubo3d.html" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">EJERCICIO PRACTICO GRUPAL</div>
+  </a>
+
+  <a href="Trabajo investigar.pdf" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Trabajo investigar</div>
+  </a>
+
+  <a href="Modelado 3D y herramientas digitalesdocx.pdf" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Trabajo Grupal</div>
+  </a>
+
+  <a href="line" class="folder">
+    <div class="icon">📋</div>
+    <div class="title">Por definir</div>
+  </a>
+
 </div>
- 
+
+<!-- PPT CENTRADO -->
+<div class="ppt-container">
+
+  <div class="ppt-wrapper">
+
+    <div class="title-ppt">
+      Diapositivas en Grupo
+    </div>
+
+    <iframe
+      src="https://www.canva.com/design/DAHJs2DE8c8/TX-g_gZtfz11E0nOlkn0Nw/view?embed"
+      allowfullscreen="allowfullscreen"
+      allow="fullscreen">
+    </iframe>
+
+  </div>
+
+</div>
 
 <h2 class="seccion-titulo">Portafolio de Ejercicios</h2>
 
